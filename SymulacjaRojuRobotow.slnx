@@ -1,0 +1,9 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="SymulacjaRojuRobotowBackend/SymulacjaRojuRobotowBackend.vcxproj" />
+  <Project Path="SymulacjaRojuRobotowConsole/SymulacjaRojuRobotowConsole.vcxproj" />
+  <Project Path="SymulacjaRojuRobotowFrontend/SymulacjaRojuRobotowFrontend.vcxproj" />
+</Solution>
