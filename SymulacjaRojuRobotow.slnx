@@ -3,7 +3,9 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="SymulacjaRojuRobotowBackend/SymulacjaRojuRobotowBackend.vcxproj" />
-  <Project Path="SymulacjaRojuRobotowConsole/SymulacjaRojuRobotowConsole.vcxproj" />
+  <Project Path="SymulacjaRojuRobotowBackend/SymulacjaRojuRobotowBackend.vcxproj" Id="b9dbef8e-756e-4d08-82d8-042cea26450d" />
+  <Project Path="SymulacjaRojuRobotowConsole/SymulacjaRojuRobotowConsole.vcxproj" Id="4043eb89-39db-4c8e-b5bf-0b9e24e0854f">
+    <BuildDependency Project="SymulacjaRojuRobotowBackend/SymulacjaRojuRobotowBackend.vcxproj" />
+  </Project>
   <Project Path="SymulacjaRojuRobotowFrontend/SymulacjaRojuRobotowFrontend.vcxproj" />
 </Solution>
