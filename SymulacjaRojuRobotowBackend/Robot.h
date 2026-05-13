@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 
+
 class Robot
 {
 private:
@@ -9,7 +10,7 @@ private:
     double rotation;    // theta rotation
 
 public:
-    Robot(double x = 0.0, double y = 0.0, double theta = 0.0, double vx = 0.0, double vy = 0.0);
+    Robot(double x, double y, double theta, double vx, double vy);
 
     double getXPosition();
     double getYPosition();
@@ -19,6 +20,7 @@ public:
     void setRotation(double theta);
 
     void constVel(double dt);
+    void updatePos(double dt);
 };
 
-extern std::vector<Robot*> robots_pnt;
+extern std::vector<Robot*>* robots_pnt;

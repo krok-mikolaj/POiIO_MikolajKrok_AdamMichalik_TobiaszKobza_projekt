@@ -7,5 +7,7 @@
   <Project Path="SymulacjaRojuRobotowConsole/SymulacjaRojuRobotowConsole.vcxproj" Id="4043eb89-39db-4c8e-b5bf-0b9e24e0854f">
     <BuildDependency Project="SymulacjaRojuRobotowBackend/SymulacjaRojuRobotowBackend.vcxproj" />
   </Project>
-  <Project Path="SymulacjaRojuRobotowFrontend/SymulacjaRojuRobotowFrontend.vcxproj" />
+  <Project Path="SymulacjaRojuRobotowFrontend/SymulacjaRojuRobotowFrontend.vcxproj">
+    <BuildDependency Project="SymulacjaRojuRobotowBackend/SymulacjaRojuRobotowBackend.vcxproj" />
+  </Project>
 </Solution>

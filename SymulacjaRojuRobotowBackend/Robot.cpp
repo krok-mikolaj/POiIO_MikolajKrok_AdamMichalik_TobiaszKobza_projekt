@@ -5,9 +5,9 @@
 #include <chrono>
 #include <iostream>
 
-std::vector<Robot*> robots_pnt;
+std::vector<Robot*>* robots_pnt = nullptr;
 
-Robot::Robot(double x, double y, double theta, double vx, double vy)
+Robot::Robot(double x=50, double y=50, double theta=0, double vx=0, double vy=0)
 {
     position[0] = x;
     position[1] = y;
@@ -54,3 +54,8 @@ void Robot::constVel(double dt)
     }
 }
 
+void Robot::updatePos(double dt)
+{
+    position[0] += velocity[0] * dt;
+    position[1] += velocity[1] * dt;
+}
