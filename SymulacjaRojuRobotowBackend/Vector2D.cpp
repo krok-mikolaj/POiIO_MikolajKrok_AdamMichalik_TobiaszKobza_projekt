@@ -6,11 +6,11 @@ using namespace std;
 
         Vector2D::Vector2D()
             {
-                this -> x = 0;
-                this -> y = 0;
+                this -> x = 0.0f;
+                this -> y = 0.0f;
             }
 
-        Vector2D::Vector2D(double x, double y)
+        Vector2D::Vector2D(float x, float y)
             {
                 this -> x = x;
                 this -> y = y;
@@ -32,17 +32,32 @@ using namespace std;
                 return Vector2D(x - other.x, y - other.y);
             }
 
-        Vector2D Vector2D::operator*(double scalar) const
+        Vector2D Vector2D::operator*(float scalar) const
             {
                 return Vector2D(x * scalar, y * scalar);
             }
 
-        Vector2D Vector2D::operator/(double scalar) const
-            {
-                return Vector2D(x / scalar, y / scalar);
-            }
-
-        double Vector2D::mag()
+        float Vector2D::mag() const
             {
                 return sqrt(x*x + y*y);
+            }
+
+        Vector2D Vector2D::normalized() const
+            {
+                float m = mag();
+                if (m > 0) return Vector2D(x / m, y / m);
+                else return Vector2D(0, 0);
+            }
+
+        void Vector2D::limit(float maxMag)
+            {
+                if (mag() > 0)
+                    {
+                        *this = normalized() * maxMag; // Change current object to maxMag
+                    }
+            }
+
+        float Vector2D::distanceTo(const Vector2D& other) const
+            {
+                return std::sqrt((x - other.x) * (x - other.x) + (y - other.y) * (y - other.y));
             }

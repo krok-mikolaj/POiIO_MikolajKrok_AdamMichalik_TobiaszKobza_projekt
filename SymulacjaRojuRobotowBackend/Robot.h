@@ -1,24 +1,27 @@
 #pragma once
+#include "Vector2D.h"
 #include <vector>
 
 class Robot
 {
 private:
-    double position[2]; // [1]: x coordinate, [2]: y coordinate
-    double velocity[2]; // [1]: x velocity, [2]: y velocity
-    double rotation;    // theta rotation
+    Vector2D position;
+    Vector2D velocity;
+    Vector2D acceleration;
+    float rotation;    // theta rotation
+
+    float percepR; // Perception radius - circle of vision of robot
+    float maxF; // Maximum steering force
+    float maxSpeed; // Maximum velocity
 
 public:
-    Robot(double x = 0.0, double y = 0.0, double theta = 0.0, double vx = 0.0, double vy = 0.0);
+    Robot(float x, float y);
 
-    double getXPosition();
-    double getYPosition();
-    double getRotation();
+    Vector2D getPosition();
+    float getRotation();
 
-    void setPosition(double x, double y);
-    void setRotation(double theta);
-
-    void constVel(double dt);
+    void setPosition(float x, float y);
+    void setVelocity(float x, float y);
+    void setAcceleration(float x, float y);
+    void setRotation(float theta);
 };
-
-extern std::vector<Robot*> robots_pnt;

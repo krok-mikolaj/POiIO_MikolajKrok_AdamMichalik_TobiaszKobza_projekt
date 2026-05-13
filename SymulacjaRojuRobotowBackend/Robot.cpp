@@ -1,56 +1,55 @@
 #include "pch.h"
 #include "Robot.h"
 #include <vector>
-#include <thread>
-#include <chrono>
 #include <iostream>
+#include <random>
 
-std::vector<Robot*> robots_pnt;
-
-Robot::Robot(double x, double y, double theta, double vx, double vy)
+Robot::Robot(float x, float y)
 {
-    position[0] = x;
-    position[1] = y;
-    rotation = theta;
-    velocity[0] = vx;
-    velocity[1] = vy;
+    static std::mt19937 rng(std::random_device{}());
+    std::uniform_real_distribution<float> dist(-2.0f, 2.0f);
+
+    setPosition(x, y);
+    setVelocity(dist(rng), dist(rng));
+    setAcceleration(0.0f, 0.0f);
+    setRotation(40.0f);
+
+    maxSpeed = 3.0f;
+    maxF = 0.1f;
+    percepR = 50.0f;
 }
 
-double Robot::getXPosition()
+Vector2D Robot::getPosition()
 {
-    return position[0];
+    return position;
 }
 
-double Robot::getYPosition()
-{
-    return position[1];
-}
-
-double Robot::getRotation()
+float Robot::getRotation()
 {
     return rotation;
 }
 
-void Robot::setPosition(double x, double y)
+void Robot::setPosition(float x, float y)
 {
-    position[0] = x;
-    position[1] = y;
+    position.x = x;
+    position.y = y;
 }
 
-void Robot::setRotation(double theta)
+void Robot::setVelocity(float x, float y)
+{
+    velocity.x = x;
+    velocity.y = y;
+}
+
+void Robot::setAcceleration(float x, float y)
+{
+    acceleration.x = x;
+    acceleration.y = y;
+}
+
+void Robot::setRotation(float theta)
 {
     rotation = theta;
 }
 
-void Robot::constVel(double dt)
-{
-    while (true) {
-        position[0] += velocity[0]*dt;
-        position[1] += velocity[1]*dt;
-        std::this_thread::sleep_for(std::chrono::duration<double>(dt));
-        std::cout << "x = " << getXPosition();
-        std::cout << " y = " << getYPosition();
-        std::cout << " theta = " << getRotation() << "\n";
-    }
-}
 
