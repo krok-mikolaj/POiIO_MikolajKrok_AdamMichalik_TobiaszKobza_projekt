@@ -39,6 +39,32 @@ void Swarm::addRobot()
 
 void Swarm::removeRobot()
 {
-	std::uniform_real_distribution <unsigned int> l(0, swarm.size());
-	swarm.erase(l);
+	if (swarm.empty()) return;
+	std::uniform_int_distribution <unsigned int> l(0, swarm.size() - 1);
+	unsigned int idx = l(rng);
+	delete swarm[idx];
+	swarm.erase(swarm.begin() + idx);
+}
+
+Vector2D cohesion(Robot* robot,const vector<Robot*>& swarm)
+{
+	Vector2D S_pos(); // Sum of position of the group of robots
+	unsigned int n = 0; // Number of neighboars in perception radius
+
+	if (swarm.empty()) return;
+
+	for (Robot* bot : swarm)
+	{
+		if ((robot = !bot) && (robot->distanceTo(bot) < robot->percepR))
+		{
+			S_pos += bot->position;
+			n++;
+		}
+	}
+
+	Vector2D avgPos = S_pos * (1 / n);
+	Vector2D t_Vel = avgPos - robot->position;
+	t_Vel = t_Vel.normalized() * robot->maxSpeed;
+	Vector2D steerF = robot->mass * (robot->velocity - t_Vel);
+	return steerF;
 }

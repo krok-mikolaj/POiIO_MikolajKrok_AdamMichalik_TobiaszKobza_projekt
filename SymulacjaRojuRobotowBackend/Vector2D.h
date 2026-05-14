@@ -2,9 +2,10 @@
 
 class Vector2D{
     public:
-        float x, y;
+        float x, y, maxMag;
 
         Vector2D();
+        Vector2D(float x, float y, float maxMag);
         Vector2D(float x, float y);
         Vector2D(const Vector2D& c); // copy constructor
         ~Vector2D(); // destructor

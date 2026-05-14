@@ -10,16 +10,23 @@ using namespace std;
                 this -> y = 0.0f;
             }
 
-        Vector2D::Vector2D(float x, float y)
+        Vector2D::Vector2D(float x, float y, float maxMag)
             {
                 this -> x = x;
                 this -> y = y;
+                this->maxMag = maxMag;
             }
+        Vector2D::Vector2D(float x, float y)
+        {
+            this->x = x;
+            this->y = y;
+        }
 
         Vector2D::Vector2D(const Vector2D& c)
             {
                 this -> x = c.x;
                 this -> y = c.y;
+                this->maxMag = c.maxMag;
             }
 
         Vector2D Vector2D::operator+(const Vector2D& other) const

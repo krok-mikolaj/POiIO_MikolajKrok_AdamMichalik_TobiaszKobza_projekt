@@ -52,4 +52,9 @@ void Robot::setRotation(float theta)
     rotation = theta;
 }
 
-
+void Robot::applyForce(Vector2D& F)
+{
+    F.limit(maxF);
+    acceleration.x += F.x / mass;
+    acceleration.y += F.y / mass;
+}

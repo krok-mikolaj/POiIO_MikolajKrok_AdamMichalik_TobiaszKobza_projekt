@@ -9,6 +9,7 @@ private:
     Vector2D velocity;
     Vector2D acceleration;
     float rotation;    // theta rotation
+    unsigned int mass = 1.0f; // Robot weight 1kg
 
     float percepR; // Perception radius - circle of vision of robot
     float maxF; // Maximum steering force
@@ -24,4 +25,5 @@ public:
     void setVelocity(float x, float y);
     void setAcceleration(float x, float y);
     void setRotation(float theta);
+    void applyForce(Vector2D& F);
 };

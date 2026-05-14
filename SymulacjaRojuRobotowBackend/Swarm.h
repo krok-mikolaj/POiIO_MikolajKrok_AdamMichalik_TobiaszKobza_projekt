@@ -23,4 +23,6 @@ class Swarm
 		void addRobot(); // adds single Robot to the swarm
 		void removeRobot(); // removes single random Robot from the swarm
 
+		// Flocking methods
+		Vector2D cohesion(Swarm swarm);
 	};
