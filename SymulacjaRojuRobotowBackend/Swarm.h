@@ -18,17 +18,9 @@ class Swarm
 		float coh_w = 1.0f;
 
 	public:
-		Swarm(float x_map,float y_map, unsigned int num_r)
-			{	
-			static std::mt19937 rng(std::random_device{}());
-			std::uniform_real_distribution <float> width(0, x_map);
-			std::uniform_real_distribution <float> height(0, y_map);
-
-				for (int i = 0; i < num_r; i++)
-					{
-						Robot* Bot = new Robot(width(rng), height(rng));
-						swarm.push_back(Bot);
-					}
-			}
+		Swarm(float x_map, float y_map, unsigned int num_r);
+		~Swarm(); // destructor which deletes all members of swarm object
+		void addRobot(); // adds single Robot to the swarm
+		void removeRobot(); // removes single random Robot from the swarm
 
 	};

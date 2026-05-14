@@ -1,8 +1,8 @@
 #include "pch.h"
 #include "Robot.h"
-#include <vector>
-#include <iostream>
 #include <random>
+
+using namespace std;
 
 Robot::Robot(float x, float y)
 {
