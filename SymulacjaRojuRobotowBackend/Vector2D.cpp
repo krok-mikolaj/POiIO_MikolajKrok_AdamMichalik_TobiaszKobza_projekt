@@ -58,7 +58,7 @@ using namespace std;
 
         void Vector2D::limit(float maxMag)
             {
-                if (mag() > 0)
+                if ((mag() > maxMag))
                     {
                         *this = normalized() * maxMag; // Change current object to maxMag
                     }

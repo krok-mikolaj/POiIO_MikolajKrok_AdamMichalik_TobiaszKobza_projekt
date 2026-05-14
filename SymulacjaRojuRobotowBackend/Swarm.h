@@ -24,5 +24,5 @@ class Swarm
 		void removeRobot(); // removes single random Robot from the swarm
 
 		// Flocking methods
-		Vector2D cohesion(Swarm swarm);
+		Vector2D cohesion(Robot* robot, const std::vector<Robot*>& swarm);
 	};

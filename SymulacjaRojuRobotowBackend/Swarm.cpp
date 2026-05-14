@@ -46,25 +46,25 @@ void Swarm::removeRobot()
 	swarm.erase(swarm.begin() + idx);
 }
 
-Vector2D cohesion(Robot* robot,const vector<Robot*>& swarm)
+Vector2D Swarm::cohesion(Robot* robot,const vector<Robot*>& swarm)
 {
-	Vector2D S_pos(); // Sum of position of the group of robots
+	Vector2D S_pos; // Sum of position of the group of robots
 	unsigned int n = 0; // Number of neighboars in perception radius
 
-	if (swarm.empty()) return;
+	if (swarm.empty()) return Vector2D();
 
 	for (Robot* bot : swarm)
 	{
-		if ((robot = !bot) && (robot->distanceTo(bot) < robot->percepR))
+		if ((robot != bot) && (robot->position.distanceTo(bot->position()) < robot->percepR))
 		{
-			S_pos += bot->position;
+			S_pos = S_pos + bot->position;
 			n++;
 		}
 	}
-
-	Vector2D avgPos = S_pos * (1 / n);
+	if(n==0) return Vector2D();
+	Vector2D avgPos = S_pos * (1.0f / n);
 	Vector2D t_Vel = avgPos - robot->position;
 	t_Vel = t_Vel.normalized() * robot->maxSpeed;
-	Vector2D steerF = robot->mass * (robot->velocity - t_Vel);
+	Vector2D steerF = (t_Vel - robot->velocity) * robot->mass;
 	return steerF;
 }
