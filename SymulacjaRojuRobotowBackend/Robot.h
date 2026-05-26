@@ -21,6 +21,7 @@ public:
     Robot(float x, float y);
 
     Vector2D getPosition();
+    Vector2D getVelocity();
     float getRotation();
 
     void setPosition(float x, float y);
