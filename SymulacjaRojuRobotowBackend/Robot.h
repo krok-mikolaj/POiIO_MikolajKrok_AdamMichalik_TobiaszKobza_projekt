@@ -1,26 +1,33 @@
 #pragma once
+#include "Vector2D.h"
 #include <vector>
 
 
 class Robot
 {
+    friend class Swarm;
+
 private:
-    double position[2]; // [1]: x coordinate, [2]: y coordinate
-    double velocity[2]; // [1]: x velocity, [2]: y velocity
-    double rotation;    // theta rotation
+    Vector2D position;
+    Vector2D velocity;
+    Vector2D acceleration;
+    float rotation;    // theta rotation
+    float mass = 1.0f; // Robot weight 1kg
+
+    float percepR; // Perception radius - circle of vision of robot
+    float maxF; // Maximum steering force
+    float maxSpeed; // Maximum velocity
 
 public:
-    Robot(double x, double y, double theta, double vx, double vy);
+    Robot(float x, float y);
 
-    double getXPosition();
-    double getYPosition();
-    double getRotation();
+    Vector2D getPosition();
+    Vector2D getVelocity();
+    float getRotation();
 
-    void setPosition(double x, double y);
-    void setRotation(double theta);
-
-    void constVel(double dt);
-    void updatePos(double dt);
+    void setPosition(float x, float y);
+    void setVelocity(float x, float y);
+    void setAcceleration(float x, float y);
+    void setRotation(float theta);
+    void applyForce(Vector2D& F);
 };
-
-extern std::vector<Robot*>* robots_pnt;
