@@ -1,6 +1,6 @@
 #pragma once
 #include <vector>
-#include "Robot.h"
+#include "WrapperSwarm.h"
 
 namespace SymulacjaRojuRobotowFrontend {
 
@@ -17,7 +17,8 @@ namespace SymulacjaRojuRobotowFrontend {
 	public ref class MainWin : public System::Windows::Forms::Form
 	{
 	private:
-		Generic::List<PictureBox^>^ robots = gcnew Generic::List<PictureBox^>();
+		Generic::List<PictureBox^>^ robotsPB = gcnew Generic::List<PictureBox^>();
+		WrapperSwarm^ wSwarm;
 		
 	private: System::Windows::Forms::ToolStripMenuItem^ stopToolStripMenuItem;
 
@@ -29,7 +30,7 @@ namespace SymulacjaRojuRobotowFrontend {
 		MainWin(void)
 		{
 			InitializeComponent();
-			robots_pnt = new std::vector<Robot*>();
+			wSwarm = gcnew WrapperSwarm(490, 379, 0);
 			//
 			//TODO: W tym miejscu dodaj kod konstruktora
 			//
@@ -76,12 +77,12 @@ namespace SymulacjaRojuRobotowFrontend {
 			this->menuStrip1 = (gcnew System::Windows::Forms::MenuStrip());
 			this->symulacjaToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->startToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
+			this->stopToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->edycjaToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->robotToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->dodajRobotaToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->imageList1 = (gcnew System::Windows::Forms::ImageList(this->components));
 			this->timer1 = (gcnew System::Windows::Forms::Timer(this->components));
-			this->stopToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->menuStrip1->SuspendLayout();
 			this->SuspendLayout();
 			// 
@@ -110,9 +111,16 @@ namespace SymulacjaRojuRobotowFrontend {
 			// startToolStripMenuItem
 			// 
 			this->startToolStripMenuItem->Name = L"startToolStripMenuItem";
-			this->startToolStripMenuItem->Size = System::Drawing::Size(180, 22);
+			this->startToolStripMenuItem->Size = System::Drawing::Size(98, 22);
 			this->startToolStripMenuItem->Text = L"Start";
 			this->startToolStripMenuItem->Click += gcnew System::EventHandler(this, &MainWin::startToolStripMenuItem_Click);
+			// 
+			// stopToolStripMenuItem
+			// 
+			this->stopToolStripMenuItem->Name = L"stopToolStripMenuItem";
+			this->stopToolStripMenuItem->Size = System::Drawing::Size(98, 22);
+			this->stopToolStripMenuItem->Text = L"Stop";
+			this->stopToolStripMenuItem->Click += gcnew System::EventHandler(this, &MainWin::stopToolStripMenuItem_Click);
 			// 
 			// edycjaToolStripMenuItem
 			// 
@@ -140,17 +148,12 @@ namespace SymulacjaRojuRobotowFrontend {
 			this->imageList1->ImageStream = (cli::safe_cast<System::Windows::Forms::ImageListStreamer^>(resources->GetObject(L"imageList1.ImageStream")));
 			this->imageList1->TransparentColor = System::Drawing::Color::Transparent;
 			this->imageList1->Images->SetKeyName(0, L"robot.png");
+			this->imageList1->Images->SetKeyName(1, L"dot.png");
+			this->imageList1->Images->SetKeyName(2, L"bigDot.png");
 			// 
 			// timer1
 			// 
 			this->timer1->Tick += gcnew System::EventHandler(this, &MainWin::timer1_Tick);
-			// 
-			// stopToolStripMenuItem
-			// 
-			this->stopToolStripMenuItem->Name = L"stopToolStripMenuItem";
-			this->stopToolStripMenuItem->Size = System::Drawing::Size(180, 22);
-			this->stopToolStripMenuItem->Text = L"Stop";
-			this->stopToolStripMenuItem->Click += gcnew System::EventHandler(this, &MainWin::stopToolStripMenuItem_Click);
 			// 
 			// MainWin
 			// 
@@ -181,36 +184,46 @@ namespace SymulacjaRojuRobotowFrontend {
 		PictureBox^ pb = gcnew PictureBox(); 
 		pb->Size = Drawing::Size(50, 50); 
 		pb->SizeMode = System::Windows::Forms::PictureBoxSizeMode::AutoSize; 
-		pb->Image = imageList1->Images[0];
+		pb->Image = imageList1->Images[2];
 
 		//pb->Location = Point(50, 50); 
-		pb->Location = Point(50 + (10 + 50) * robots->Count, 50);
-		pb->Name = L"robot" + Convert::ToString(robots->Count); 
+		pb->Location = Point(50 + (10 + 50) * robotsPB->Count, 50);
+		pb->Name = L"robot" + Convert::ToString(robotsPB->Count); 
 
 		this->Controls->Add(pb); 
-		robots->Add(pb); 
+		robotsPB->Add(pb); 
 	}
+
+	private: Void removeRobotImg()
+	{
+		if (robotsPB->Count == 0) return;
+		PictureBox^ pb = robotsPB[robotsPB->Count - 1];
+		this->Controls->Remove(pb);
+		robotsPB->RemoveAt(robotsPB->Count - 1);
+	}
+
 private: System::Void dodajRobotaToolStripMenuItem_Click(System::Object^ sender, System::EventArgs^ e) {
-	addRobot();
+	wSwarm->addRobot();
 	addRobotImg();
 }
 private: System::Void timer1_Tick(System::Object^ sender, System::EventArgs^ e) {
-	double dt = double(timer1->Interval) / 1000;
+	double dt = double(timer1->Interval) / 1000.0;
 	time += dt;
 
-	for (int i = 0; i < robots_pnt->size(); i++) 
+	wSwarm->update(dt);
+	List<Tuple<float, float>^>^ positions = wSwarm->getSwarmPositions();
+
+	for (int i = 0; i < positions->Count && i < robotsPB->Count; i++) 
 	{
-		(*robots_pnt)[i]->updatePos(dt);
+		robotsPB[i]->Location = Point((int)positions[i]->Item1, (int)positions[i]->Item2);
 
-		int x = (int)(*robots_pnt)[i]->getXPosition();
-		int y = (int)(*robots_pnt)[i]->getYPosition();
+		//(*robots_pnt)[i]->updatePos(dt);
 
-		robots[i]->Location = Point(x, y);
+		//int x = (int)(*robots_pnt)[i]->getXPosition();
+		//int y = (int)(*robots_pnt)[i]->getYPosition();
+
+		//robotsPB[i]->Location = Point(x, y);
 	}
-}
-private: Void addRobot() {
-	Robot* robot = new Robot(50+(10+50)*robots_pnt->size(), 50, 0, 10, 100);
-	robots_pnt->push_back(robot);
 }
 
 };

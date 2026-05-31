@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "Robot.h"
 #include <random>
 
@@ -13,9 +14,9 @@ Robot::Robot(float x, float y)
     setAcceleration(0.0f, 0.0f);
     setRotation(40.0f);
 
-    maxSpeed = 3.0f;
-    maxF = 0.1f;
-    percepR = 150.0f;
+    maxSpeed = 10.0f; //zmieniono z 3.0f
+    maxF = 1.0f; //zmieniono z 0.1f
+    percepR = 100.0f; //zmieniono z 150.f
 }
 
 Vector2D Robot::getPosition()

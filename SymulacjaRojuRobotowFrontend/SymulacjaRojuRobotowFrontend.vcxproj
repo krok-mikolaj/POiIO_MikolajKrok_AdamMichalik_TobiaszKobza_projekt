@@ -123,11 +123,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MainWin.cpp" />
+    <ClCompile Include="WrapperSwarm.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainWin.h">
       <FileType>CppForm</FileType>
     </ClInclude>
+    <ClInclude Include="WrapperSwarm.h" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="MainWin.resx">

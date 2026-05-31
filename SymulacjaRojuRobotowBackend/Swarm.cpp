@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "Swarm.h"
 #include <random>
 #include <cmath>
@@ -153,6 +154,23 @@ void Swarm::update()
 		robot->velocity = robot->velocity + robot->acceleration;
 		robot->velocity.limit(robot->maxSpeed);
 		robot->position = robot->position + robot->velocity;
+		robot->acceleration = Vector2D();
+		wrapEdges(robot);
+	}
+}
+
+void Swarm::update_dt(double dt)
+{
+	for (Robot* robot : swarm) // Calculates steering force and new acceleration for each robot in exacts frame of time
+	{
+		flock(robot, swarm);
+	}
+
+	for (Robot* robot : swarm) // Corrects velocity and position regarding to steering force from flocking algorithm
+	{
+		robot->velocity = robot->velocity + robot->acceleration * dt;
+		robot->velocity.limit(robot->maxSpeed);
+		robot->position = robot->position + robot->velocity * dt;
 		robot->acceleration = Vector2D();
 		wrapEdges(robot);
 	}

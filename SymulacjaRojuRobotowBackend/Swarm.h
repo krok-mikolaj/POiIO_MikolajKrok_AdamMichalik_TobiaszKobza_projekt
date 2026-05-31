@@ -31,5 +31,6 @@ public:
 	void flock(Robot* robot, const std::vector<Robot*>& swarm);
 
 	void update();
+	void update_dt(double dt);
 	void wrapEdges(Robot* robot);
 };
