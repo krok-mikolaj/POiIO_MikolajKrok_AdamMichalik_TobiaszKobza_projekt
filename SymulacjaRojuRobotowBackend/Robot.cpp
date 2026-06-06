@@ -63,3 +63,23 @@ void Robot::applyForce(Vector2D& F)
     acceleration.x += F.x / mass;
     acceleration.y += F.y / mass;
 }
+
+Vector2D Robot::getAcceleration()
+{
+    return acceleration;
+}
+
+void Robot::update(double dt)
+{
+    velocity =
+        velocity +
+        acceleration * dt;
+
+    velocity.limit(maxSpeed);
+
+    position =
+        position +
+        velocity * dt;
+
+    acceleration = Vector2D();
+}
