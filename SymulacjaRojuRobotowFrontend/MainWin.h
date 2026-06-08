@@ -28,6 +28,14 @@ namespace SymulacjaRojuRobotowFrontend {
 		//timer
 		double time = 0;
 
+	private: // Obstacles
+		bool  isAddingObstacle = false;
+		float obstacleRadius = 10.0f;
+
+		ToolStripMenuItem^ przeszkodaToolStripMenuItem;
+		ToolStripMenuItem^ dodajPrzeszkodeToolStripMenuItem;
+		ToolStripMenuItem^ usunPrzeszkodyToolStripMenuItem;
+
 	public:
 		MainWin(void)
 		{
@@ -49,6 +57,30 @@ namespace SymulacjaRojuRobotowFrontend {
 				->SetValue(this->renderPanel, true, nullptr);
 			
 			this->Controls->Add(this->renderPanel);
+
+			// --- Obstacle menu items (added in code, not in designer) ---
+			przeszkodaToolStripMenuItem = gcnew ToolStripMenuItem();
+			dodajPrzeszkodeToolStripMenuItem = gcnew ToolStripMenuItem();
+			usunPrzeszkodyToolStripMenuItem = gcnew ToolStripMenuItem();
+
+			przeszkodaToolStripMenuItem->Text = L"Przeszkoda";
+
+			dodajPrzeszkodeToolStripMenuItem->Text = L"Dodaj przeszkode";
+			dodajPrzeszkodeToolStripMenuItem->CheckOnClick = true;
+			dodajPrzeszkodeToolStripMenuItem->Click += gcnew System::EventHandler(
+				this, &MainWin::dodajPrzeszkodeToolStripMenuItem_Click);
+
+			usunPrzeszkodyToolStripMenuItem->Text = L"Usun przeszkody";
+			usunPrzeszkodyToolStripMenuItem->Click += gcnew System::EventHandler(
+				this, &MainWin::usunPrzeszkodyToolStripMenuItem_Click);
+
+			przeszkodaToolStripMenuItem->DropDownItems->Add(dodajPrzeszkodeToolStripMenuItem);
+			przeszkodaToolStripMenuItem->DropDownItems->Add(usunPrzeszkodyToolStripMenuItem);
+			edycjaToolStripMenuItem->DropDownItems->Add(przeszkodaToolStripMenuItem);
+
+			// Wire mouse click on renderPanel for obstacle placement
+			this->renderPanel->MouseClick += gcnew System::Windows::Forms::MouseEventHandler(
+				this, &MainWin::renderPanel_MouseClick);
 		}
 
 	protected:
@@ -224,6 +256,33 @@ private: System::Void dodajRobotaToolStripMenuItem_Click(System::Object^ sender,
 	wSwarm->addRobot();
 	//addRobotImg();
 }
+
+	// Toggle obstacle-placement mode on/off
+private: System::Void dodajPrzeszkodeToolStripMenuItem_Click(
+	System::Object^ sender, System::EventArgs^ e)
+{
+	isAddingObstacle = dodajPrzeszkodeToolStripMenuItem->Checked;
+}
+
+		// Remove all obstacles from the simulation
+private: System::Void usunPrzeszkodyToolStripMenuItem_Click(
+	System::Object^ sender, System::EventArgs^ e)
+{
+	wSwarm->clearObstacles();
+	renderPanel->Invalidate();
+}
+
+		// Place an obstacle where the user clicked (only when mode is active)
+private: System::Void renderPanel_MouseClick(
+	System::Object^ sender, System::Windows::Forms::MouseEventArgs^ e)
+{
+	if (isAddingObstacle)
+	{
+		wSwarm->addObstacle((float)e->X, (float)e->Y, obstacleRadius);
+		renderPanel->Invalidate();
+	}
+}
+
 private: System::Void timer1_Tick(System::Object^ sender, System::EventArgs^ e) {
 	double dt = double(timer1->Interval) / 1000.0;
 	time += dt;
@@ -305,6 +364,35 @@ private: System::Void renderPanel_Paint(System::Object^ sender, PaintEventArgs^ 
 		g->RotateTransform(angle);
 		g->DrawImage(originalRobotImg, -hw, -hh);  // rysuj wyœrodkowany
 		g->Restore(state);
+	}
+
+
+	// Draw obstacles
+	auto obstacles = wSwarm->getObstacles();
+	SolidBrush^ obsFill = gcnew SolidBrush(Color::FromArgb(160, 105, 105, 105));
+	Pen^ obsBorder = gcnew Pen(Color::FromArgb(255, 60, 60, 60), 2.0f);
+
+	for (int i = 0; i < obstacles->Count; i++)
+	{
+		float ox = obstacles[i]->Item1;
+		float oy = obstacles[i]->Item2;
+		float r = obstacles[i]->Item3;
+		g->FillEllipse(obsFill, ox - r, oy - r, r * 2.0f, r * 2.0f);
+		g->DrawEllipse(obsBorder, ox - r, oy - r, r * 2.0f, r * 2.0f);
+	}
+
+	delete obsFill;
+	delete obsBorder;
+
+	// Draw a small cursor hint when obstacle-placement mode is active
+	if (isAddingObstacle)
+	{
+		Pen^ hintPen = gcnew Pen(Color::FromArgb(180, 200, 80, 80), 1.5f);
+		Drawing::Point cur = renderPanel->PointToClient(
+			System::Windows::Forms::Cursor::Position);
+		float r = obstacleRadius;
+		g->DrawEllipse(hintPen, cur.X - r, cur.Y - r, r * 2.0f, r * 2.0f);
+		delete hintPen;
 	}
 }
 
