@@ -18,5 +18,7 @@ public:
 
     List<Tuple<float, float>^>^ getSwarmPositions();
 	List<float>^ getSwarmRotations();
+
+    void setMapSize(float x, float y);
 };
 

@@ -21,8 +21,15 @@ namespace SymulacjaRojuRobotowFrontend {
 		Bitmap^ originalRobotImg;
 		//Generic::List<PictureBox^>^ robotsPB = gcnew Generic::List<PictureBox^>();
 		WrapperSwarm^ wSwarm;
-		
+	private: System::Windows::Forms::ToolStripMenuItem^ symulacjaToolStripMenuItem;
+	private: System::Windows::Forms::ToolStripMenuItem^ startToolStripMenuItem;
 	private: System::Windows::Forms::ToolStripMenuItem^ stopToolStripMenuItem;
+	private: System::Windows::Forms::ToolStripMenuItem^ edycjaToolStripMenuItem;
+	private: System::Windows::Forms::ToolStripMenuItem^ robotToolStripMenuItem;
+	private: System::Windows::Forms::ToolStripMenuItem^ dodajRobotaToolStripMenuItem;
+	private: System::Windows::Forms::MenuStrip^ menuStrip1;
+
+
 
 
 		//timer
@@ -33,10 +40,12 @@ namespace SymulacjaRojuRobotowFrontend {
 		{
 			InitializeComponent();
 			wSwarm = gcnew WrapperSwarm(490, 379, 0);
+
 			//
 			//TODO: W tym miejscu dodaj kod konstruktora
 			//
 			originalRobotImg = gcnew Bitmap(imageList1->Images[3]);
+			
 
 			this->renderPanel = gcnew Panel();
 			this->renderPanel->Location = Point(0, 24);  // pod menu
@@ -49,6 +58,9 @@ namespace SymulacjaRojuRobotowFrontend {
 				->SetValue(this->renderPanel, true, nullptr);
 			
 			this->Controls->Add(this->renderPanel);
+
+			this->Resize += gcnew EventHandler(this, &MainWin::MainWin_Resize);
+			this->KeyPreview = true;
 		}
 
 	protected:
@@ -62,14 +74,14 @@ namespace SymulacjaRojuRobotowFrontend {
 				delete components;
 			}
 		}
-	private: System::Windows::Forms::MenuStrip^ menuStrip1;
-	private: System::Windows::Forms::ToolStripMenuItem^ symulacjaToolStripMenuItem;
-	private: System::Windows::Forms::ToolStripMenuItem^ startToolStripMenuItem;
+
+
+
 
 	private: System::Windows::Forms::ImageList^ imageList1;
-	private: System::Windows::Forms::ToolStripMenuItem^ edycjaToolStripMenuItem;
-	private: System::Windows::Forms::ToolStripMenuItem^ robotToolStripMenuItem;
-	private: System::Windows::Forms::ToolStripMenuItem^ dodajRobotaToolStripMenuItem;
+
+
+
 	private: System::Windows::Forms::Timer^ timer1;
 	private: System::ComponentModel::IContainer^ components;
 	protected:
@@ -90,29 +102,30 @@ namespace SymulacjaRojuRobotowFrontend {
 		{
 			this->components = (gcnew System::ComponentModel::Container());
 			System::ComponentModel::ComponentResourceManager^ resources = (gcnew System::ComponentModel::ComponentResourceManager(MainWin::typeid));
-			this->menuStrip1 = (gcnew System::Windows::Forms::MenuStrip());
+			this->imageList1 = (gcnew System::Windows::Forms::ImageList(this->components));
+			this->timer1 = (gcnew System::Windows::Forms::Timer(this->components));
 			this->symulacjaToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->startToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->stopToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->edycjaToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->robotToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->dodajRobotaToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
-			this->imageList1 = (gcnew System::Windows::Forms::ImageList(this->components));
-			this->timer1 = (gcnew System::Windows::Forms::Timer(this->components));
+			this->menuStrip1 = (gcnew System::Windows::Forms::MenuStrip());
 			this->menuStrip1->SuspendLayout();
 			this->SuspendLayout();
 			// 
-			// menuStrip1
+			// imageList1
 			// 
-			this->menuStrip1->Items->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(2) {
-				this->symulacjaToolStripMenuItem,
-					this->edycjaToolStripMenuItem
-			});
-			this->menuStrip1->Location = System::Drawing::Point(0, 0);
-			this->menuStrip1->Name = L"menuStrip1";
-			this->menuStrip1->Size = System::Drawing::Size(490, 24);
-			this->menuStrip1->TabIndex = 0;
-			this->menuStrip1->Text = L"menuStrip1";
+			this->imageList1->ImageStream = (cli::safe_cast<System::Windows::Forms::ImageListStreamer^>(resources->GetObject(L"imageList1.ImageStream")));
+			this->imageList1->TransparentColor = System::Drawing::Color::Transparent;
+			this->imageList1->Images->SetKeyName(0, L"robot.png");
+			this->imageList1->Images->SetKeyName(1, L"dot.png");
+			this->imageList1->Images->SetKeyName(2, L"bigDot.png");
+			this->imageList1->Images->SetKeyName(3, L"robot_arrow.png");
+			// 
+			// timer1
+			// 
+			this->timer1->Tick += gcnew System::EventHandler(this, &MainWin::timer1_Tick);
 			// 
 			// symulacjaToolStripMenuItem
 			// 
@@ -159,18 +172,17 @@ namespace SymulacjaRojuRobotowFrontend {
 			this->dodajRobotaToolStripMenuItem->Text = L"Dodaj robota";
 			this->dodajRobotaToolStripMenuItem->Click += gcnew System::EventHandler(this, &MainWin::dodajRobotaToolStripMenuItem_Click);
 			// 
-			// imageList1
+			// menuStrip1
 			// 
-			this->imageList1->ImageStream = (cli::safe_cast<System::Windows::Forms::ImageListStreamer^>(resources->GetObject(L"imageList1.ImageStream")));
-			this->imageList1->TransparentColor = System::Drawing::Color::Transparent;
-			this->imageList1->Images->SetKeyName(0, L"robot.png");
-			this->imageList1->Images->SetKeyName(1, L"dot.png");
-			this->imageList1->Images->SetKeyName(2, L"bigDot.png");
-			this->imageList1->Images->SetKeyName(3, L"robot_arrow.png");
-			// 
-			// timer1
-			// 
-			this->timer1->Tick += gcnew System::EventHandler(this, &MainWin::timer1_Tick);
+			this->menuStrip1->Items->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(2) {
+				this->symulacjaToolStripMenuItem,
+					this->edycjaToolStripMenuItem
+			});
+			this->menuStrip1->Location = System::Drawing::Point(0, 0);
+			this->menuStrip1->Name = L"menuStrip1";
+			this->menuStrip1->Size = System::Drawing::Size(490, 24);
+			this->menuStrip1->TabIndex = 0;
+			this->menuStrip1->Text = L"menuStrip1";
 			// 
 			// MainWin
 			// 
@@ -181,6 +193,7 @@ namespace SymulacjaRojuRobotowFrontend {
 			this->MainMenuStrip = this->menuStrip1;
 			this->Name = L"MainWin";
 			this->Text = L"MainWin";
+			this->KeyDown += gcnew System::Windows::Forms::KeyEventHandler(this, &MainWin::MainWin_KeyDown);
 			this->menuStrip1->ResumeLayout(false);
 			this->menuStrip1->PerformLayout();
 			this->ResumeLayout(false);
@@ -222,6 +235,7 @@ namespace SymulacjaRojuRobotowFrontend {
 
 private: System::Void dodajRobotaToolStripMenuItem_Click(System::Object^ sender, System::EventArgs^ e) {
 	wSwarm->addRobot();
+	renderPanel->Invalidate();
 	//addRobotImg();
 }
 private: System::Void timer1_Tick(System::Object^ sender, System::EventArgs^ e) {
@@ -308,5 +322,29 @@ private: System::Void renderPanel_Paint(System::Object^ sender, PaintEventArgs^ 
 	}
 }
 
+private: System::Void MainWin_KeyDown(System::Object^ sender, System::Windows::Forms::KeyEventArgs^ e) {
+	if (e->KeyCode == Keys::A) {
+		wSwarm->addRobot();
+		renderPanel->Invalidate();
+	}
+	else if (e->KeyCode == Keys::X) {
+		wSwarm->removeRobot();
+		renderPanel->Invalidate();
+	}
+}
+
+private: System::Void MainWin_Resize(System::Object^ sender, System::EventArgs^ e)
+{
+	int newW = this->ClientSize.Width;
+	int newH = this->ClientSize.Height - menuStrip1->Height;
+
+	// Aktualizuj rozmiar panelu
+	renderPanel->Size = Drawing::Size(newW, newH);
+
+	// Aktualizuj rozmiar mapy w Swarm
+	wSwarm->setMapSize((float)newW, (float)newH);
+
+	renderPanel->Invalidate();
+}
 };
 }

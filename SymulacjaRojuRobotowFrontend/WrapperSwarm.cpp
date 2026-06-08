@@ -48,3 +48,8 @@ List<float>^ WrapperSwarm::getSwarmRotations()
         result->Add(swarm->getRobot(i)->getRotation());
     return result;
 }
+
+void WrapperSwarm::setMapSize(float x, float y)
+{
+    swarm->setMapSize(x, y);
+}

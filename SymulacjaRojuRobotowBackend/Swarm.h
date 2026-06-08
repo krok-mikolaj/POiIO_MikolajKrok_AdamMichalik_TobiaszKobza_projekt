@@ -36,4 +36,6 @@ public:
 	void update();
 	void update_dt(double dt);
 	void wrapEdges(Robot* robot);
+
+	void setMapSize(float x, float y) { x_map = x; y_map = y; }
 };
