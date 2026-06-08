@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "WrapperSwarm.h"
 
 WrapperSwarm::WrapperSwarm(float x_map, float y_map, unsigned int num_r)
@@ -26,7 +27,6 @@ void WrapperSwarm::update(double dt)
     swarm->update_dt(dt);
 }
 
-
 List<Tuple<float, float>^>^ WrapperSwarm::getSwarmPositions()
 {
     List<Tuple<float, float>^>^ list = gcnew List<Tuple<float, float>^>();
@@ -39,4 +39,26 @@ List<Tuple<float, float>^>^ WrapperSwarm::getSwarmPositions()
     }
 
     return list;
+}
+
+// ------------------------------------------------------------------ Pattern API
+
+void WrapperSwarm::setPattern(int patternType, float spacing)
+{
+    swarm->setPattern(static_cast<PatternType>(patternType), spacing);
+}
+
+void WrapperSwarm::setPattern(int patternType)
+{
+    swarm->setPattern(static_cast<PatternType>(patternType));
+}
+
+void WrapperSwarm::clearPattern()
+{
+    swarm->clearPattern();
+}
+
+int WrapperSwarm::getActivePattern()
+{
+    return static_cast<int>(swarm->getActivePattern());
 }

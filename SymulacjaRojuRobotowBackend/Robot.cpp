@@ -15,7 +15,7 @@ Robot::Robot(float x, float y)
     setRotation(40.0f);
 
     maxSpeed = 10.0f; //zmieniono z 3.0f
-    maxF = 1.0f; //zmieniono z 0.1f
+    maxF = 3.0f; //zmieniono z 0.1f
     percepR = 100.0f; //zmieniono z 150.f
 }
 
