@@ -61,6 +61,8 @@ namespace SymulacjaRojuRobotowFrontend {
 
 			this->Resize += gcnew EventHandler(this, &MainWin::MainWin_Resize);
 			this->KeyPreview = true;
+
+			this->renderPanel->MouseDown += gcnew MouseEventHandler(this, &MainWin::renderPanel_MouseDown);
 		}
 
 	protected:
@@ -343,6 +345,20 @@ private: System::Void MainWin_Resize(System::Object^ sender, System::EventArgs^ 
 
 	// Aktualizuj rozmiar mapy w Swarm
 	wSwarm->setMapSize((float)newW, (float)newH);
+
+	renderPanel->Invalidate();
+}
+
+private: System::Void renderPanel_MouseDown(System::Object^ sender, System::Windows::Forms::MouseEventArgs^ e)
+{
+	if (e->Button == System::Windows::Forms::MouseButtons::Left)
+	{
+		wSwarm->addRobotAt((float)e->X, (float)e->Y);
+	}
+	else if (e->Button == System::Windows::Forms::MouseButtons::Right)
+	{
+		wSwarm->removeNearestRobot((float)e->X, (float)e->Y);
+	}
 
 	renderPanel->Invalidate();
 }

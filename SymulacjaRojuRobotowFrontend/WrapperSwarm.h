@@ -20,5 +20,8 @@ public:
 	List<float>^ getSwarmRotations();
 
     void setMapSize(float x, float y);
+
+    void addRobotAt(float x, float y);
+    void removeNearestRobot(float x, float y);
 };
 

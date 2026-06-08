@@ -38,4 +38,7 @@ public:
 	void wrapEdges(Robot* robot);
 
 	void setMapSize(float x, float y) { x_map = x; y_map = y; }
+
+	void addRobotAt(float x, float y);
+	void removeNearestRobot(float x, float y);
 };

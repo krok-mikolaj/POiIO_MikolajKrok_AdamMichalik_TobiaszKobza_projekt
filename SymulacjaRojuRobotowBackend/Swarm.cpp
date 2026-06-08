@@ -184,3 +184,32 @@ void Swarm::wrapEdges(Robot* robot)
 	if (robot->position.y > y_map) robot->position.y = 0;
 	if (robot->position.y < 0) robot->position.y = y_map;
 }
+
+void Swarm::addRobotAt(float x, float y)
+{
+	Robot* Bot = new Robot(x, y);
+	swarm.push_back(Bot);
+}
+
+void Swarm::removeNearestRobot(float x, float y)
+{
+	if (swarm.empty()) return;
+
+	int nearestIdx = 0;
+	float minDist = FLT_MAX;
+
+	for (int i = 0; i < swarm.size(); i++)
+	{
+		float dx = swarm[i]->position.x - x;
+		float dy = swarm[i]->position.y - y;
+		float dist = sqrt(dx * dx + dy * dy);
+		if (dist < minDist)
+		{
+			minDist = dist;
+			nearestIdx = i;
+		}
+	}
+
+	delete swarm[nearestIdx];
+	swarm.erase(swarm.begin() + nearestIdx);
+}

@@ -53,3 +53,13 @@ void WrapperSwarm::setMapSize(float x, float y)
 {
     swarm->setMapSize(x, y);
 }
+
+void WrapperSwarm::addRobotAt(float x, float y)
+{
+    swarm->addRobotAt(x, y);
+}
+
+void WrapperSwarm::removeNearestRobot(float x, float y)
+{
+    swarm->removeNearestRobot(x, y);
+}
