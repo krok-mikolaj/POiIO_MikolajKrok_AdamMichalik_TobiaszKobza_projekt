@@ -24,6 +24,13 @@ public:
     void update(double dt);
 
     List<Tuple<float, float>^>^ getSwarmPositions();
+	List<float>^ getSwarmRotations();
+
+    void setMapSize(float x, float y);
+
+    void addRobotAt(float x, float y);
+    void removeNearestRobot(float x, float y);
+};
 
     // Pattern API
     void setPattern(int patternType, float spacing);

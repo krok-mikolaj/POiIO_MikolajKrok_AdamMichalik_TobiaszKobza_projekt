@@ -31,6 +31,7 @@ private:
     // Steering force towards robot's assigned slot
     Vector2D seekSlot(Robot* robot, const Vector2D& target);
 
+ 
 public:
     Swarm(float x_map, float y_map, unsigned int num_r);
     ~Swarm();
@@ -38,7 +39,10 @@ public:
     const std::vector<Robot*>& getSwarm();
     void addRobot();
     void removeRobot();
-
+  
+  
+    int getRobotsCount() const { return (int)swarm.size(); }
+	  Robot* getRobot(int i) { return swarm[i]; }
     // --- Pattern API ---
     // Activate a pattern centred on the map; spacing controls slot density.
     void setPattern(PatternType type, float spacing = 60.0f);
@@ -55,4 +59,11 @@ public:
     void update();
     void update_dt(double dt);
     void wrapEdges(Robot* robot);
+
+
+	void setMapSize(float x, float y) { x_map = x; y_map = y; }
+
+	void addRobotAt(float x, float y);
+	void removeNearestRobot(float x, float y);
 };
+

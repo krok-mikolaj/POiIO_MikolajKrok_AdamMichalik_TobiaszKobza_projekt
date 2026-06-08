@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Robot.h"
 #include <random>
+#include <cmath>
 
 using namespace std;
 
@@ -20,8 +21,7 @@ Robot::Robot(float x, float y)
 }
 
 Vector2D Robot::getPosition()
-{
-    return position;
+{    return position;
 }
 
 Vector2D Robot::getVelocity()
@@ -44,6 +44,8 @@ void Robot::setVelocity(float x, float y)
 {
     velocity.x = x;
     velocity.y = y;
+
+    updateRotation();
 }
 
 void Robot::setAcceleration(float x, float y)
@@ -82,4 +84,13 @@ void Robot::update(double dt)
         velocity * dt;
 
     acceleration = Vector2D();
+}
+void Robot::updateRotation()
+{
+    if (velocity.mag() > 0.0f)
+    {
+		float radians = atan2(velocity.y, velocity.x);
+
+		rotation = radians * (180.0f / 3.14159f) + 90.0f;
+    }
 }

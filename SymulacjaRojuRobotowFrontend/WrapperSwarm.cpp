@@ -41,6 +41,29 @@ List<Tuple<float, float>^>^ WrapperSwarm::getSwarmPositions()
     return list;
 }
 
+List<float>^ WrapperSwarm::getSwarmRotations()
+{
+    List<float>^ result = gcnew List<float>();
+    for (int i = 0; i < swarm->getRobotsCount(); i++)
+        result->Add(swarm->getRobot(i)->getRotation());
+    return result;
+}
+
+void WrapperSwarm::setMapSize(float x, float y)
+{
+    swarm->setMapSize(x, y);
+}
+
+void WrapperSwarm::addRobotAt(float x, float y)
+{
+    swarm->addRobotAt(x, y);
+}
+
+void WrapperSwarm::removeNearestRobot(float x, float y)
+{
+    swarm->removeNearestRobot(x, y);
+}
+
 // ------------------------------------------------------------------ Pattern API
 
 void WrapperSwarm::setPattern(int patternType, float spacing)
@@ -62,3 +85,4 @@ int WrapperSwarm::getActivePattern()
 {
     return static_cast<int>(swarm->getActivePattern());
 }
+
