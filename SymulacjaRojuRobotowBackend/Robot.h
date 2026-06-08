@@ -25,6 +25,8 @@ public:
 
     Vector2D getPosition();
     Vector2D getVelocity();
+    Vector2D getAcceleration();
+
     float getRotation();
 
     void setPosition(float x, float y);
@@ -32,4 +34,7 @@ public:
     void setAcceleration(float x, float y);
     void setRotation(float theta);
     void applyForce(Vector2D& F);
+
+    void update(double dt);
+
 };

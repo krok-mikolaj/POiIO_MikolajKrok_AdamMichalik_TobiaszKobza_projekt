@@ -2,6 +2,16 @@
 #include <vector>
 #include "WrapperSwarm.h"
 
+// ============================================================
+//  WYBÃ“R ALGORYTMU â€” zmieÃ± tÃª liniÃª Â¿eby wybraÃ¦ tryb startowy:
+//
+//    WrapperSwarm::PATTERN_NONE     -> swobodny flocking (Â³awica)
+//    WrapperSwarm::PATTERN_CIRCLE   -> formacja okrÂ¹g
+//    WrapperSwarm::PATTERN_SQUARE   -> formacja kwadrat
+//    WrapperSwarm::PATTERN_HEX_GRID -> formacja siatka hex
+// ============================================================
+static const int INITIAL_PATTERN = WrapperSwarm::PATTERN_HEX_GRID;
+
 namespace SymulacjaRojuRobotowFrontend {
 
 	using namespace System;
@@ -11,9 +21,6 @@ namespace SymulacjaRojuRobotowFrontend {
 	using namespace System::Data;
 	using namespace System::Drawing;
 
-	/// <summary>
-	/// Podsumowanie informacji o MainWin
-	/// </summary>
 	public ref class MainWin : public System::Windows::Forms::Form
 	{
 	private:
@@ -31,9 +38,9 @@ namespace SymulacjaRojuRobotowFrontend {
 
 
 
+	private: System::Windows::Forms::ToolStripMenuItem^ stopToolStripMenuItem;
 
-		//timer
-		double time = 0;
+		   double time = 0;
 
 	public:
 		MainWin(void)
@@ -41,6 +48,9 @@ namespace SymulacjaRojuRobotowFrontend {
 			InitializeComponent();
 			wSwarm = gcnew WrapperSwarm(490, 379, 0);
 
+			// Ustaw algorytm startowy â€” zmieÃ± INITIAL_PATTERN na gÃ³rze pliku
+			if (INITIAL_PATTERN != WrapperSwarm::PATTERN_NONE)
+				wSwarm->setPattern(INITIAL_PATTERN);
 			//
 			//TODO: W tym miejscu dodaj kod konstruktora
 			//
@@ -50,7 +60,7 @@ namespace SymulacjaRojuRobotowFrontend {
 			this->renderPanel = gcnew Panel();
 			this->renderPanel->Location = Point(0, 24);  // pod menu
 			this->renderPanel->Size = Drawing::Size(490, 355);
-			this->renderPanel->BackColor = Color::White;  // lub dowolne t³o symulacji
+			this->renderPanel->BackColor = Color::White;  // lub dowolne tÂ³o symulacji
 			this->renderPanel->Paint += gcnew PaintEventHandler(this, &MainWin::renderPanel_Paint);
 			this->renderPanel->GetType()->GetProperty("DoubleBuffered",
 				System::Reflection::BindingFlags::Instance |
@@ -66,9 +76,6 @@ namespace SymulacjaRojuRobotowFrontend {
 		}
 
 	protected:
-		/// <summary>
-		/// Wyczyœæ wszystkie u¿ywane zasoby.
-		/// </summary>
 		~MainWin()
 		{
 			if (components)
@@ -97,8 +104,8 @@ namespace SymulacjaRojuRobotowFrontend {
 
 #pragma region Windows Form Designer generated code
 		/// <summary>
-		/// Metoda wymagana do obs³ugi projektanta — nie nale¿y modyfikowaæ
-		/// jej zawartoœci w edytorze kodu.
+		/// Metoda wymagana do obsÂ³ugi projektanta â€” nie naleÂ¿y modyfikowaÃ¦
+		/// jej zawartoÅ“ci w edytorze kodu.
 		/// </summary>
 		void InitializeComponent(void)
 		{
@@ -203,6 +210,7 @@ namespace SymulacjaRojuRobotowFrontend {
 
 		}
 #pragma endregion
+
 	private: System::Void startToolStripMenuItem_Click(System::Object^ sender, System::EventArgs^ e) {
 		time = 0;
 		timer1->Interval = 10;
@@ -221,10 +229,9 @@ namespace SymulacjaRojuRobotowFrontend {
 
 		//pb->Location = Point(50, 50); 
 		pb->Location = Point(50 + (10 + 50) * robotsPB->Count, 50);
-		pb->Name = L"robot" + Convert::ToString(robotsPB->Count); 
-
-		this->Controls->Add(pb); 
-		robotsPB->Add(pb); 
+		pb->Name = L"robot" + Convert::ToString(robotsPB->Count);
+		this->Controls->Add(pb);
+		robotsPB->Add(pb);
 	}
 
 	private: Void removeRobotImg()
@@ -254,14 +261,14 @@ private: System::Void timer1_Tick(System::Object^ sender, System::EventArgs^ e) 
 	{
 		float angle = rotations[i];
 
-		// Usuñ poprzedni obrócony obraz (¿eby nie wyciekaæ pamiêci)
+		// UsuÃ± poprzedni obrÃ³cony obraz (Â¿eby nie wyciekaÃ¦ pamiÃªci)
 		if (robotsPB[i]->Image != nullptr && robotsPB[i]->Image != originalRobotImg)
 			delete robotsPB[i]->Image;
 
 		Bitmap^ rotated = RotateImage(originalRobotImg, angle);
 		robotsPB[i]->Image = rotated;
 
-		// Wyœrodkuj PictureBox wzglêdem pozycji robota
+		// WyÅ“rodkuj PictureBox wzglÃªdem pozycji robota
 		int cx = (int)positions[i]->Item1 - rotated->Width / 2;
 		int cy = (int)positions[i]->Item2 - rotated->Height / 2;
 		robotsPB[i]->Size = Drawing::Size(rotated->Width, rotated->Height);
@@ -319,10 +326,9 @@ private: System::Void renderPanel_Paint(System::Object^ sender, PaintEventArgs^ 
 		System::Drawing::Drawing2D::GraphicsState^ state = g->Save();
 		g->TranslateTransform(px, py);
 		g->RotateTransform(angle);
-		g->DrawImage(originalRobotImg, -hw, -hh);  // rysuj wyœrodkowany
+		g->DrawImage(originalRobotImg, -hw, -hh);  // rysuj wyÅ“rodkowany
 		g->Restore(state);
 	}
-}
 
 private: System::Void MainWin_KeyDown(System::Object^ sender, System::Windows::Forms::KeyEventArgs^ e) {
 	if (e->KeyCode == Keys::A) {
