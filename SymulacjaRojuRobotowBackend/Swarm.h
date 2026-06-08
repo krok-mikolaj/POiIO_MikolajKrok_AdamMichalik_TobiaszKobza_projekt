@@ -13,8 +13,8 @@ private:
 	float x_map, y_map;
 
 	// Behavior weights
-	float sep_w = 1.5f;
-	float align_w = 1.0f;
+	float sep_w = 2.0f;
+	float align_w = 2.0f;
 	float coh_w = 2.0f;
 
 public:
@@ -23,6 +23,9 @@ public:
 	const std::vector<Robot*>& getSwarm();
 	void addRobot(); // adds single Robot to the swarm
 	void removeRobot(); // removes single random Robot from the swarm
+
+	int getRobotsCount() const { return (int)swarm.size(); }
+	Robot* getRobot(int i) { return swarm[i]; }
 
 	// Flocking methods
 	Vector2D cohesion(Robot* robot, const std::vector<Robot*>& swarm);

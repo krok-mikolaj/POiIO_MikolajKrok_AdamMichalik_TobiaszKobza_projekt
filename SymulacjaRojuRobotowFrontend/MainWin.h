@@ -17,7 +17,9 @@ namespace SymulacjaRojuRobotowFrontend {
 	public ref class MainWin : public System::Windows::Forms::Form
 	{
 	private:
-		Generic::List<PictureBox^>^ robotsPB = gcnew Generic::List<PictureBox^>();
+		Panel^ renderPanel;
+		Bitmap^ originalRobotImg;
+		//Generic::List<PictureBox^>^ robotsPB = gcnew Generic::List<PictureBox^>();
 		WrapperSwarm^ wSwarm;
 		
 	private: System::Windows::Forms::ToolStripMenuItem^ stopToolStripMenuItem;
@@ -34,6 +36,19 @@ namespace SymulacjaRojuRobotowFrontend {
 			//
 			//TODO: W tym miejscu dodaj kod konstruktora
 			//
+			originalRobotImg = gcnew Bitmap(imageList1->Images[3]);
+
+			this->renderPanel = gcnew Panel();
+			this->renderPanel->Location = Point(0, 24);  // pod menu
+			this->renderPanel->Size = Drawing::Size(490, 355);
+			this->renderPanel->BackColor = Color::White;  // lub dowolne t³o symulacji
+			this->renderPanel->Paint += gcnew PaintEventHandler(this, &MainWin::renderPanel_Paint);
+			this->renderPanel->GetType()->GetProperty("DoubleBuffered",
+				System::Reflection::BindingFlags::Instance |
+				System::Reflection::BindingFlags::NonPublic)
+				->SetValue(this->renderPanel, true, nullptr);
+			
+			this->Controls->Add(this->renderPanel);
 		}
 
 	protected:
@@ -63,7 +78,8 @@ namespace SymulacjaRojuRobotowFrontend {
 		/// <summary>
 		/// Wymagana zmienna projektanta.
 		/// </summary>
-
+		
+		//private: System::Void renderPanel_Paint(System::Object^ sender, System::Windows::Forms::PaintEventArgs^ e);
 
 #pragma region Windows Form Designer generated code
 		/// <summary>
@@ -150,6 +166,7 @@ namespace SymulacjaRojuRobotowFrontend {
 			this->imageList1->Images->SetKeyName(0, L"robot.png");
 			this->imageList1->Images->SetKeyName(1, L"dot.png");
 			this->imageList1->Images->SetKeyName(2, L"bigDot.png");
+			this->imageList1->Images->SetKeyName(3, L"robot_arrow.png");
 			// 
 			// timer1
 			// 
@@ -179,12 +196,13 @@ namespace SymulacjaRojuRobotowFrontend {
 	private: System::Void stopToolStripMenuItem_Click(System::Object^ sender, System::EventArgs^ e) {
 		timer1->Enabled = false;
 	}
-	private: Void addRobotImg()
+	/*private: Void addRobotImg()
 	{
 		PictureBox^ pb = gcnew PictureBox(); 
-		pb->Size = Drawing::Size(50, 50); 
-		pb->SizeMode = System::Windows::Forms::PictureBoxSizeMode::AutoSize; 
-		pb->Image = imageList1->Images[2];
+		pb->Size = Drawing::Size(24, 24); 
+		pb->SizeMode = PictureBoxSizeMode::Zoom;
+		pb->BackColor = Color::Transparent;
+		pb->Image = originalRobotImg;
 
 		//pb->Location = Point(50, 50); 
 		pb->Location = Point(50 + (10 + 50) * robotsPB->Count, 50);
@@ -200,29 +218,93 @@ namespace SymulacjaRojuRobotowFrontend {
 		PictureBox^ pb = robotsPB[robotsPB->Count - 1];
 		this->Controls->Remove(pb);
 		robotsPB->RemoveAt(robotsPB->Count - 1);
-	}
+	}*/
 
 private: System::Void dodajRobotaToolStripMenuItem_Click(System::Object^ sender, System::EventArgs^ e) {
 	wSwarm->addRobot();
-	addRobotImg();
+	//addRobotImg();
 }
 private: System::Void timer1_Tick(System::Object^ sender, System::EventArgs^ e) {
 	double dt = double(timer1->Interval) / 1000.0;
 	time += dt;
 
 	wSwarm->update(dt);
+
+	renderPanel->Invalidate();/*
 	List<Tuple<float, float>^>^ positions = wSwarm->getSwarmPositions();
+	List<float>^ rotations = wSwarm->getSwarmRotations();
 
 	for (int i = 0; i < positions->Count && i < robotsPB->Count; i++) 
 	{
-		robotsPB[i]->Location = Point((int)positions[i]->Item1, (int)positions[i]->Item2);
+		float angle = rotations[i];
 
-		//(*robots_pnt)[i]->updatePos(dt);
+		// Usuñ poprzedni obrócony obraz (¿eby nie wyciekaæ pamiêci)
+		if (robotsPB[i]->Image != nullptr && robotsPB[i]->Image != originalRobotImg)
+			delete robotsPB[i]->Image;
 
-		//int x = (int)(*robots_pnt)[i]->getXPosition();
-		//int y = (int)(*robots_pnt)[i]->getYPosition();
+		Bitmap^ rotated = RotateImage(originalRobotImg, angle);
+		robotsPB[i]->Image = rotated;
 
-		//robotsPB[i]->Location = Point(x, y);
+		// Wyœrodkuj PictureBox wzglêdem pozycji robota
+		int cx = (int)positions[i]->Item1 - rotated->Width / 2;
+		int cy = (int)positions[i]->Item2 - rotated->Height / 2;
+		robotsPB[i]->Size = Drawing::Size(rotated->Width, rotated->Height);
+		robotsPB[i]->Location = Point(cx, cy);
+
+
+		//robotsPB[i]->Location = Point((int)positions[i]->Item1, (int)positions[i]->Item2);
+
+	}*/
+}
+
+private: Bitmap^ RotateImage(Bitmap^ original, float angleDeg)
+{
+	double rad = angleDeg * Math::PI / 180.0;
+	double cosA = Math::Abs(Math::Cos(rad));
+	double sinA = Math::Abs(Math::Sin(rad));
+
+	int newW = (int)(original->Width * cosA + original->Height * sinA);
+	int newH = (int)(original->Width * sinA + original->Height * cosA);
+
+	Bitmap^ result = gcnew Bitmap(newW, newH, Imaging::PixelFormat::Format32bppArgb);
+	Graphics^ g = Graphics::FromImage(result);
+
+	g->InterpolationMode = Drawing2D::InterpolationMode::HighQualityBicubic;
+	g->SmoothingMode = Drawing2D::SmoothingMode::AntiAlias;
+	g->Clear(Color::Transparent);
+
+	g->TranslateTransform(newW / 2.0f, newH / 2.0f);
+	g->RotateTransform(angleDeg);
+	g->TranslateTransform(-original->Width / 2.0f, -original->Height / 2.0f);
+	g->DrawImage(original, 0, 0);
+
+	delete g;
+	return result;
+}
+
+private: System::Void renderPanel_Paint(System::Object^ sender, PaintEventArgs^ e)
+{
+	Graphics^ g = e->Graphics;
+	g->InterpolationMode = Drawing2D::InterpolationMode::HighQualityBicubic;
+	g->SmoothingMode = Drawing2D::SmoothingMode::AntiAlias;
+
+	List<Tuple<float, float>^>^ positions = wSwarm->getSwarmPositions();
+	List<float>^ rotations = wSwarm->getSwarmRotations();
+
+	int hw = originalRobotImg->Width / 2;
+	int hh = originalRobotImg->Height / 2;
+
+	for (int i = 0; i < positions->Count; i++)
+	{
+		float px = positions[i]->Item1;
+		float py = positions[i]->Item2;
+		float angle = rotations[i];
+
+		System::Drawing::Drawing2D::GraphicsState^ state = g->Save();
+		g->TranslateTransform(px, py);
+		g->RotateTransform(angle);
+		g->DrawImage(originalRobotImg, -hw, -hh);  // rysuj wyœrodkowany
+		g->Restore(state);
 	}
 }
 

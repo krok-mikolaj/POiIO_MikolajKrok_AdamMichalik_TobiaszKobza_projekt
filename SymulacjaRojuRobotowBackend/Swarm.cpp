@@ -172,6 +172,7 @@ void Swarm::update_dt(double dt)
 		robot->velocity.limit(robot->maxSpeed);
 		robot->position = robot->position + robot->velocity * dt;
 		robot->acceleration = Vector2D();
+		robot->updateRotation();
 		wrapEdges(robot);
 	}
 }

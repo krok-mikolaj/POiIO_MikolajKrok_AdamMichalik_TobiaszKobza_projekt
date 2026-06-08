@@ -18,6 +18,8 @@ private:
     float maxF; // Maximum steering force
     float maxSpeed; // Maximum velocity
 
+	void updateRotation();
+
 public:
     Robot(float x, float y);
 

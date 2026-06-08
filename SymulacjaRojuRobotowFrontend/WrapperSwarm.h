@@ -17,5 +17,6 @@ public:
     void update(double dt);
 
     List<Tuple<float, float>^>^ getSwarmPositions();
+	List<float>^ getSwarmRotations();
 };
 
