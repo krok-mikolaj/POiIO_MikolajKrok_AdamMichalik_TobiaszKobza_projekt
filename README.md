@@ -78,6 +78,8 @@ W lewym górnym rogu ekranu wyświetlane są na bieżąco:
  
 Przypisanie robotów do punktów formacji realizowane jest algorytmem dopasowania: każdy robot otrzymuje najbliższy wolny punkt docelowy. Wyniki są buforowane i przeliczane tylko przy zmianie trybu lub liczby robotów, co eliminuje niestabilność wynikającą z przeliczania co klatkę.
 
+---
+
 ## Udział w pracy
 
 - Mikołaj Krok: część graficzna CLI, w tym wyświetlanie robotów, skróty klawiszowe i elementy GUI
