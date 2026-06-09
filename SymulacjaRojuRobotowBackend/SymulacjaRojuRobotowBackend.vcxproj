@@ -140,6 +140,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="framework.h" />
+    <ClInclude Include="Obstacle.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Robot.h" />
     <ClInclude Include="Swarm.h" />

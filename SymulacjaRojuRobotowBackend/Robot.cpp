@@ -15,9 +15,9 @@ Robot::Robot(float x, float y)
     setAcceleration(0.0f, 0.0f);
     setRotation(40.0f);
 
-    maxSpeed = 100.0f; //zmieniono z 3.0f
-    maxF = 10.0f; //zmieniono z 0.1f
-    percepR = 150.0f; //zmieniono z 150.f
+    maxSpeed = 300.0f; //zmieniono z 3.0f
+    maxF = 60.0f; //zmieniono z 0.1f
+    percepR = 250.0f; //zmieniono z 150.f
 }
 
 Vector2D Robot::getPosition()
@@ -59,11 +59,12 @@ void Robot::setRotation(float theta)
     rotation = theta;
 }
 
-void Robot::applyForce(Vector2D& F)
+void Robot::applyForce(const Vector2D& F)
 {
-    F.limit(maxF);
-    acceleration.x += F.x / mass;
-    acceleration.y += F.y / mass;
+    Vector2D limited = F;
+    limited.limit(maxF);
+    acceleration.x += limited.x / mass;
+    acceleration.y += limited.y / mass;
 }
 
 void Robot::updateRotation()

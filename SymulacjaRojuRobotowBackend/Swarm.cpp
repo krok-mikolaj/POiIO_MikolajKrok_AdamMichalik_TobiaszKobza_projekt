@@ -42,6 +42,7 @@ void Swarm::addRobot()
 
 	Robot* Bot = new Robot(width(rng), height(rng));
 	swarm.push_back(Bot);
+	targetsDirty = true;
 }
 
 void Swarm::removeRobot()
@@ -51,6 +52,7 @@ void Swarm::removeRobot()
 	unsigned int idx = l(rng);
 	delete swarm[idx];
 	swarm.erase(swarm.begin() + idx);
+	targetsDirty = true;
 }
 
 Vector2D Swarm::cohesion(Robot* robot, const vector<Robot*>& swarm)
@@ -139,7 +141,20 @@ void Swarm::flock(Robot* robot, const vector<Robot*>& swarm)
 	steerF = steerF + seperation(robot, swarm) * sep_w;
 	steerF = steerF + alignment(robot, swarm) * align_w;
 
+	// Cel tylko we flockingu
+	if (hasTarget && currentBehavior == SwarmBehavior::Flocking)
+		steerF = steerF + seekTarget(robot, targetPoint) * target_w;
+
 	robot->applyForce(steerF);
+
+	// Przeszkody osobno — żeby maxF ich nie tłumił
+	if (!obstacles.empty())
+	{
+		Vector2D obsF = obstacleAvoidance(robot, obstacles) * obs_w;
+		obsF.limit(robot->maxF * obs_w);
+		robot->acceleration.x += obsF.x / robot->mass;
+		robot->acceleration.y += obsF.y / robot->mass;
+	}
 }
 
 void Swarm::update()
@@ -161,19 +176,78 @@ void Swarm::update()
 
 void Swarm::update_dt(double dt)
 {
-	for (Robot* robot : swarm) // Calculates steering force and new acceleration for each robot in exacts frame of time
+	// Przelicz cele tylko gdy coś się zmieniło
+	if (currentBehavior != SwarmBehavior::Flocking)
 	{
-		flock(robot, swarm);
+		if (targetsDirty || (int)swarm.size() != cachedRobotCount)
+		{
+			if (currentBehavior == SwarmBehavior::CircleFormation)
+				cachedTargets = assignTargets(getCircleTargets());
+			else if (currentBehavior == SwarmBehavior::HexGridFormation)
+				cachedTargets = assignTargets(getHexGridTargets());
+			else if (currentBehavior == SwarmBehavior::CustomFormation)
+				cachedTargets = assignTargets(customFormation);
+
+			cachedRobotCount = (int)swarm.size();
+			targetsDirty = false;
+		}
 	}
 
-	for (Robot* robot : swarm) // Corrects velocity and position regarding to steering force from flocking algorithm
+	for (size_t i = 0; i < swarm.size(); i++)
 	{
-		robot->velocity = robot->velocity + robot->acceleration * dt;
+		if (currentBehavior == SwarmBehavior::Flocking)
+		{
+			flock(swarm[i], swarm);
+		}
+		else if (i < cachedTargets.size())
+		{
+			float sepWeight = sep_w * 0.3f;
+			Vector2D sep = seperation(swarm[i], swarm) * sepWeight;
+			Vector2D form = formationForce(swarm[i], cachedTargets[i]);
+			swarm[i]->applyForce(form + sep);
+		}
+	}
+
+	for (Robot* robot : swarm)
+	{
+		robot->velocity = robot->velocity + robot->acceleration * (float)dt;
 		robot->velocity.limit(robot->maxSpeed);
-		robot->position = robot->position + robot->velocity * dt;
+		robot->position = robot->position + robot->velocity * (float)dt;
 		robot->acceleration = Vector2D();
 		robot->updateRotation();
-		wrapEdges(robot);
+
+		if (currentBehavior == SwarmBehavior::Flocking)
+			wrapEdges(robot);
+	}
+
+	for (Robot* robot : swarm)
+	{
+		robot->velocity = robot->velocity + robot->acceleration * (float)dt;
+		robot->velocity.limit(robot->maxSpeed);
+		robot->position = robot->position + robot->velocity * (float)dt;
+		robot->acceleration = Vector2D();
+		robot->updateRotation();
+
+		// ── Wypychanie z wnętrza przeszkody ──
+		for (const Obstacle& o : obstacles)
+		{
+			float d = robot->position.distanceTo(o.position);
+			float minDist = o.radius + 4.0f;
+			if (d < minDist && d > 0.01f)
+			{
+				Vector2D away = (robot->position - o.position).normalized();
+				robot->position.x = o.position.x + away.x * minDist;
+				robot->position.y = o.position.y + away.y * minDist;
+				float dot = robot->velocity.x * away.x + robot->velocity.y * away.y;
+				if (dot < 0) {
+					robot->velocity.x -= dot * away.x;
+					robot->velocity.y -= dot * away.y;
+				}
+			}
+		}
+
+		if (currentBehavior == SwarmBehavior::Flocking)
+			wrapEdges(robot);
 	}
 }
 
@@ -189,6 +263,7 @@ void Swarm::addRobotAt(float x, float y)
 {
 	Robot* Bot = new Robot(x, y);
 	swarm.push_back(Bot);
+	targetsDirty = true;
 }
 
 void Swarm::removeNearestRobot(float x, float y)
@@ -198,7 +273,7 @@ void Swarm::removeNearestRobot(float x, float y)
 	int nearestIdx = 0;
 	float minDist = FLT_MAX;
 
-	for (int i = 0; i < swarm.size(); i++)
+	for (size_t i = 0; i < swarm.size(); i++)
 	{
 		float dx = swarm[i]->position.x - x;
 		float dy = swarm[i]->position.y - y;
@@ -212,4 +287,163 @@ void Swarm::removeNearestRobot(float x, float y)
 
 	delete swarm[nearestIdx];
 	swarm.erase(swarm.begin() + nearestIdx);
+	targetsDirty = true;
+}
+
+// Siła przyciągająca robota do jego miejsca w formacji
+Vector2D Swarm::formationForce(Robot* robot, Vector2D targetPos)
+{
+	Vector2D t_Vel = targetPos - robot->position;
+	float dist = t_Vel.mag();
+	if (dist < 1.0f) return Vector2D();
+
+	t_Vel = t_Vel.normalized() * robot->maxSpeed;
+	Vector2D steerF = (t_Vel - robot->velocity) * robot->mass;
+	steerF.limit(robot->maxF);
+	return steerF;
+}
+
+std::vector<Vector2D> Swarm::getCircleTargets()
+{
+	std::vector<Vector2D> targets;
+	int n = swarm.size();
+	if (n == 0) return targets;
+
+	float cx = x_map / 2.0f;
+	float cy = y_map / 2.0f;
+	float radius = std::min(x_map, y_map) * 0.35f;
+	float angleStep = 2.0f * 3.14159265f / n;
+
+	for (int i = 0; i < n; i++)
+	{
+		float angle = i * angleStep;
+		targets.push_back(Vector2D(
+			cx + radius * std::cos(angle),
+			cy + radius * std::sin(angle)
+		));
+	}
+	return targets;
+}
+
+std::vector<Vector2D> Swarm::getHexGridTargets()
+{
+	std::vector<Vector2D> targets;
+	int n = swarm.size();
+	if (n == 0) return targets;
+
+	float spacing = 50.0f;
+	float cx = x_map / 2.0f;
+	float cy = y_map / 2.0f;
+
+	// Hexgrid — co drugi rząd przesunięty o połowę
+	int cols = (int)std::ceil(std::sqrt((float)n));
+	int rows = (int)std::ceil((float)n / cols);
+
+	float startX = cx - (cols * spacing) / 2.0f;
+	float startY = cy - (rows * spacing * 0.866f) / 2.0f; // 0.866 = sqrt(3)/2
+
+	for (int i = 0; i < n; i++)
+	{
+		int row = i / cols;
+		int col = i % cols;
+		float offsetX = (row % 2 == 0) ? 0.0f : spacing * 0.5f; // przesunięcie co drugi rząd
+
+		targets.push_back(Vector2D(
+			startX + col * spacing + offsetX,
+			startY + row * spacing * 0.866f
+		));
+	}
+	return targets;
+}
+
+// Swarm.cpp - nowa metoda przypisująca cele
+std::vector<Vector2D> Swarm::assignTargets(const std::vector<Vector2D>& targets)
+{
+	std::vector<Vector2D> assigned(swarm.size());
+	std::vector<bool> taken(targets.size(), false);
+
+	for (int i = 0; i < swarm.size(); i++)
+	{
+		float minDist = FLT_MAX;
+		int bestIdx = 0;
+
+		for (int j = 0; j < targets.size(); j++)
+		{
+			if (taken[j]) continue;
+			float d = swarm[i]->position.distanceTo(targets[j]);
+			if (d < minDist)
+			{
+				minDist = d;
+				bestIdx = j;
+			}
+		}
+		taken[bestIdx] = true;
+		assigned[i] = targets[bestIdx];
+	}
+	return assigned;
+}
+
+// ── Przeszkody ──
+void Swarm::addObstacle(float x, float y, float radius)
+{
+	obstacles.emplace_back(x, y, radius);
+}
+
+void Swarm::removeNearestObstacle(float x, float y)
+{
+	if (obstacles.empty()) return;
+	int   nearest = 0;
+	float minDist = FLT_MAX;
+	for (int i = 0; i < (int)obstacles.size(); i++)
+	{
+		float dx = obstacles[i].position.x - x;
+		float dy = obstacles[i].position.y - y;
+		float d = sqrt(dx * dx + dy * dy);
+		if (d < minDist) { minDist = d; nearest = i; }
+	}
+	obstacles.erase(obstacles.begin() + nearest);
+}
+
+void Swarm::clearObstacles() { obstacles.clear(); }
+
+// ── Cel ──
+void Swarm::setTarget(float x, float y) { targetPoint = Vector2D(x, y); hasTarget = true; }
+void Swarm::clearTarget() { hasTarget = false; }
+
+// ── Unikanie przeszkód ──
+Vector2D Swarm::obstacleAvoidance(Robot* robot, const std::vector<Obstacle>& obs)
+{
+	if (obs.empty()) return Vector2D();
+	Vector2D sumForce;
+	bool hit = false;
+	for (const Obstacle& o : obs)
+	{
+		float d = robot->position.distanceTo(o.position);
+		float detectionRange = o.radius + robot->percepR * 0.5f;
+		if (d < detectionRange)
+		{
+			float surfaceDist = std::max(d - o.radius, 0.1f);
+			Vector2D away = (robot->position - o.position).normalized();
+			sumForce = sumForce + away * (detectionRange / surfaceDist) * robot->maxSpeed;
+			hit = true;
+		}
+	}
+	if (!hit) return Vector2D();
+	Vector2D desired = sumForce.normalized() * robot->maxSpeed;
+	Vector2D steerF = (desired - robot->velocity) * robot->mass;
+	steerF.limit(robot->maxF);
+	return steerF;
+}
+
+// ── Podążanie do celu ──
+Vector2D Swarm::seekTarget(Robot* robot, const Vector2D& target)
+{
+	Vector2D toTarget = target - robot->position;
+	float d = toTarget.mag();
+	if (d < 1.0f) return Vector2D();
+	float speed = (d < slowRadius) ? robot->maxSpeed * (d / slowRadius) : robot->maxSpeed;
+	Vector2D desired = toTarget.normalized() * speed;
+	Vector2D steerF = (desired - robot->velocity) * robot->mass;
+	steerF.limit(robot->maxF);
+	return steerF;
 }

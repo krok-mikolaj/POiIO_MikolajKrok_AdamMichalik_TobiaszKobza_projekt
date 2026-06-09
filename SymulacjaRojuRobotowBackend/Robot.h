@@ -18,7 +18,7 @@ private:
     float maxF; // Maximum steering force
     float maxSpeed; // Maximum velocity
 
-	void updateRotation();
+	
 
 public:
     Robot(float x, float y);
@@ -31,5 +31,7 @@ public:
     void setVelocity(float x, float y);
     void setAcceleration(float x, float y);
     void setRotation(float theta);
-    void applyForce(Vector2D& F);
+    void applyForce(const Vector2D& F);
+
+    void updateRotation();
 };
