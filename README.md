@@ -12,10 +12,11 @@ Projekt powstał w **C++/CLI** z wykorzystaniem **Windows Forms**.
 ---
  
 ## Uruchomienie
- 
-1. Otwórz plik rozwiązania `SymulacjaRojuRobotow.sln` w Visual Studio.
-2. Ustaw `SymulacjaRojuRobotowFrontend` jako projekt startowy (prawy klik → *Set as Startup Project*).
-3. Skompiluj i uruchom (`F5`).
+
+1. Pobrać rozwiązanie z gałęzi 'Wersja-pokazowa'.
+2. Otwórz plik rozwiązania `SymulacjaRojuRobotow.sln` w Visual Studio.
+3. Ustaw `SymulacjaRojuRobotowFrontend` jako projekt startowy (prawy klik → *Set as Startup Project*).
+4. Skompiluj i uruchom (`F5`).
  
 ## Instrukcja obsługi
  
