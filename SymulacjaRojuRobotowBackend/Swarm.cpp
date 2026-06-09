@@ -141,20 +141,8 @@ void Swarm::flock(Robot* robot, const vector<Robot*>& swarm)
 	steerF = steerF + seperation(robot, swarm) * sep_w;
 	steerF = steerF + alignment(robot, swarm) * align_w;
 
-	// Cel tylko we flockingu
-	if (hasTarget && currentBehavior == SwarmBehavior::Flocking)
-		steerF = steerF + seekTarget(robot, targetPoint) * target_w;
-
 	robot->applyForce(steerF);
 
-	// Przeszkody osobno — żeby maxF ich nie tłumił
-	if (!obstacles.empty())
-	{
-		Vector2D obsF = obstacleAvoidance(robot, obstacles) * obs_w;
-		obsF.limit(robot->maxF * obs_w);
-		robot->acceleration.x += obsF.x / robot->mass;
-		robot->acceleration.y += obsF.y / robot->mass;
-	}
 }
 
 void Swarm::update()
@@ -215,36 +203,6 @@ void Swarm::update_dt(double dt)
 		robot->position = robot->position + robot->velocity * (float)dt;
 		robot->acceleration = Vector2D();
 		robot->updateRotation();
-
-		if (currentBehavior == SwarmBehavior::Flocking)
-			wrapEdges(robot);
-	}
-
-	for (Robot* robot : swarm)
-	{
-		robot->velocity = robot->velocity + robot->acceleration * (float)dt;
-		robot->velocity.limit(robot->maxSpeed);
-		robot->position = robot->position + robot->velocity * (float)dt;
-		robot->acceleration = Vector2D();
-		robot->updateRotation();
-
-		// ── Wypychanie z wnętrza przeszkody ──
-		for (const Obstacle& o : obstacles)
-		{
-			float d = robot->position.distanceTo(o.position);
-			float minDist = o.radius + 4.0f;
-			if (d < minDist && d > 0.01f)
-			{
-				Vector2D away = (robot->position - o.position).normalized();
-				robot->position.x = o.position.x + away.x * minDist;
-				robot->position.y = o.position.y + away.y * minDist;
-				float dot = robot->velocity.x * away.x + robot->velocity.y * away.y;
-				if (dot < 0) {
-					robot->velocity.x -= dot * away.x;
-					robot->velocity.y -= dot * away.y;
-				}
-			}
-		}
 
 		if (currentBehavior == SwarmBehavior::Flocking)
 			wrapEdges(robot);
@@ -381,69 +339,4 @@ std::vector<Vector2D> Swarm::assignTargets(const std::vector<Vector2D>& targets)
 		assigned[i] = targets[bestIdx];
 	}
 	return assigned;
-}
-
-// ── Przeszkody ──
-void Swarm::addObstacle(float x, float y, float radius)
-{
-	obstacles.emplace_back(x, y, radius);
-}
-
-void Swarm::removeNearestObstacle(float x, float y)
-{
-	if (obstacles.empty()) return;
-	int   nearest = 0;
-	float minDist = FLT_MAX;
-	for (int i = 0; i < (int)obstacles.size(); i++)
-	{
-		float dx = obstacles[i].position.x - x;
-		float dy = obstacles[i].position.y - y;
-		float d = sqrt(dx * dx + dy * dy);
-		if (d < minDist) { minDist = d; nearest = i; }
-	}
-	obstacles.erase(obstacles.begin() + nearest);
-}
-
-void Swarm::clearObstacles() { obstacles.clear(); }
-
-// ── Cel ──
-void Swarm::setTarget(float x, float y) { targetPoint = Vector2D(x, y); hasTarget = true; }
-void Swarm::clearTarget() { hasTarget = false; }
-
-// ── Unikanie przeszkód ──
-Vector2D Swarm::obstacleAvoidance(Robot* robot, const std::vector<Obstacle>& obs)
-{
-	if (obs.empty()) return Vector2D();
-	Vector2D sumForce;
-	bool hit = false;
-	for (const Obstacle& o : obs)
-	{
-		float d = robot->position.distanceTo(o.position);
-		float detectionRange = o.radius + robot->percepR * 0.5f;
-		if (d < detectionRange)
-		{
-			float surfaceDist = std::max(d - o.radius, 0.1f);
-			Vector2D away = (robot->position - o.position).normalized();
-			sumForce = sumForce + away * (detectionRange / surfaceDist) * robot->maxSpeed;
-			hit = true;
-		}
-	}
-	if (!hit) return Vector2D();
-	Vector2D desired = sumForce.normalized() * robot->maxSpeed;
-	Vector2D steerF = (desired - robot->velocity) * robot->mass;
-	steerF.limit(robot->maxF);
-	return steerF;
-}
-
-// ── Podążanie do celu ──
-Vector2D Swarm::seekTarget(Robot* robot, const Vector2D& target)
-{
-	Vector2D toTarget = target - robot->position;
-	float d = toTarget.mag();
-	if (d < 1.0f) return Vector2D();
-	float speed = (d < slowRadius) ? robot->maxSpeed * (d / slowRadius) : robot->maxSpeed;
-	Vector2D desired = toTarget.normalized() * speed;
-	Vector2D steerF = (desired - robot->velocity) * robot->mass;
-	steerF.limit(robot->maxF);
-	return steerF;
 }

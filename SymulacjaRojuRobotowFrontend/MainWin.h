@@ -33,9 +33,6 @@ namespace SymulacjaRojuRobotowFrontend {
 		   List<Tuple<float, float>^>^ customPoints = gcnew List<Tuple<float, float>^>();
 
 
-		   bool  placingObstacle = false;
-		   bool  placingTarget = false;
-		   float obstacleRadius = 30.0f;
 
 		//timer
 		double time = 0;
@@ -308,28 +305,7 @@ private: Bitmap^ RotateImage(Bitmap^ original, float angleDeg)
 private: System::Void renderPanel_Paint(System::Object^ sender, PaintEventArgs^ e)
 {
 	Graphics^ g = e->Graphics;
-	g->InterpolationMode = Drawing2D::InterpolationMode::HighQualityBicubic;
-	g->SmoothingMode = Drawing2D::SmoothingMode::AntiAlias;
-	// Przeszkody
-	auto obstacles = wSwarm->getObstacles();
-	for each (Tuple<float, float, float> ^ o in obstacles)
-	{
-		float ox = o->Item1, oy = o->Item2, r = o->Item3;
-		g->FillEllipse(gcnew SolidBrush(Color::FromArgb(180, 80, 80, 80)),
-			ox - r, oy - r, r * 2.0f, r * 2.0f);
-		g->DrawEllipse(gcnew Pen(Color::DimGray, 2.0f),
-			ox - r, oy - r, r * 2.0f, r * 2.0f);
-	}
 
-	// Cel
-	if (wSwarm->getHasTarget())
-	{
-		auto t = wSwarm->getTarget();
-		float tx = t->Item1, ty = t->Item2;
-		g->DrawEllipse(gcnew Pen(Color::LimeGreen, 2.0f), (float)(tx - 15), (float)(ty - 15), 30.0f, 30.0f);
-		g->DrawLine(gcnew Pen(Color::LimeGreen, 2.0f), tx - 8, ty, tx + 8, ty);
-		g->DrawLine(gcnew Pen(Color::LimeGreen, 2.0f), tx, ty - 8, tx, ty + 8);
-	}
 	//Graphics^ g = e->Graphics;
 	g->InterpolationMode = Drawing2D::InterpolationMode::HighQualityBicubic;
 	g->SmoothingMode = Drawing2D::SmoothingMode::AntiAlias;
@@ -368,11 +344,10 @@ private: System::Void renderPanel_Paint(System::Object^ sender, PaintEventArgs^ 
 	}
 
 	// HUD — liczba robotów i prêdkoœæ czasu
-	String^ mode = placingObstacle ? "Przeszkody [O]" :
-		placingTarget ? "Cel [T]" : "Normalny";
+
 	String^ hud = String::Format(
-		"Roboty: {0}   Czas: {1:F2}x   Tryb: {2}",
-		positions->Count, timeScale, mode);
+		"Roboty: {0}   Czas: {1:F2}x",
+		positions->Count, timeScale);
 
 	Drawing::Font^ hudFont = gcnew Drawing::Font("Arial", 10, FontStyle::Bold);
 	SizeF textSize = g->MeasureString(hud, hudFont);
@@ -418,22 +393,7 @@ private: System::Void MainWin_KeyDown(System::Object^ sender, System::Windows::F
 	else if (e->KeyCode == Keys::P)
 		timer1->Enabled = !timer1->Enabled;  // pauza
 
-	else if (e->KeyCode == Keys::O)  // tryb przeszkód
-	{
-		placingObstacle = !placingObstacle;
-		placingTarget = false;
-	}
-	else if (e->KeyCode == Keys::T)  // tryb celu
-	{
-		placingTarget = !placingTarget;
-		placingObstacle = false;
-	}
-	else if (e->KeyCode == Keys::Escape)
-	{
-		wSwarm->clearTarget();
-		wSwarm->clearObstacles();
-		renderPanel->Invalidate();
-	}
+
 }
 
 private: System::Void MainWin_Resize(System::Object^ sender, System::EventArgs^ e)
@@ -452,24 +412,7 @@ private: System::Void MainWin_Resize(System::Object^ sender, System::EventArgs^ 
 
 private: System::Void renderPanel_MouseDown(System::Object^ sender, System::Windows::Forms::MouseEventArgs^ e)
 {
-	if (placingObstacle)
-	{
-		if (e->Button == System::Windows::Forms::MouseButtons::Left)
-			wSwarm->addObstacle((float)e->X, (float)e->Y, obstacleRadius);
-		else if (e->Button == System::Windows::Forms::MouseButtons::Right)
-			wSwarm->removeNearestObstacle((float)e->X, (float)e->Y);
-		renderPanel->Invalidate();
-		return;
-	}
-	if (placingTarget)
-	{
-		if (e->Button == System::Windows::Forms::MouseButtons::Left)
-			wSwarm->setTarget((float)e->X, (float)e->Y);
-		else if (e->Button == System::Windows::Forms::MouseButtons::Right)
-			wSwarm->clearTarget();
-		renderPanel->Invalidate();
-		return;
-	}
+
 	if (settingCustomFormation && e->Button == System::Windows::Forms::MouseButtons::Left)
 	{
 		customPoints->Add(Tuple::Create((float)e->X, (float)e->Y));
