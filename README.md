@@ -35,10 +35,6 @@ Projekt powstał w **C++/CLI** z wykorzystaniem **Windows Forms**.
 |---|---|
 | `LPM` na obszarze | Dodaj robota w miejscu kliknięcia |
 | `PPM` na obszarze | Usuń robota najbliższego kursora |
-| `LPM` (tryb przeszkód) | Dodaj przeszkodę |
-| `PPM` (tryb przeszkód) | Usuń przeszkodę najbliższą kursora |
-| `LPM` (tryb celu) | Ustaw cel dla roju |
-| `PPM` (tryb celu) | Usuń cel |
  
 | `C` | Zacznij rysować własną formację |
  
